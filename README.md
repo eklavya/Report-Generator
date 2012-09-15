@@ -8,9 +8,11 @@ You can set the quality and resolution for images and select output report forma
 Reorder the images by drag and drop, select which images to include, watch previews.
 
 
+
 To build this application, you need to install Qt-sdk.
 
 Chek out http://qt.nokia.com/downloads for your platform's binaries.
+
 
 After cloning the git branch:
 
@@ -21,5 +23,6 @@ qmake -project
 qmake
 
 make
+
 
 Have fun making reports !
