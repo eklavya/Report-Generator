@@ -10,9 +10,13 @@ Chek out http://qt.nokia.com/downloads for your platform's binaries.
 
 
 After cloning the git branch:
+
 cd src
+
 qmake -project
+
 qmake
+
 make
 
 Have fun making reports !
