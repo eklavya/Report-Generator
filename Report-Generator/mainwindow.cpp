@@ -14,10 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scrollArea->setWidget(dummy);
     ui->imageWidth->setRange(100, 1000);
     ui->imageHeight->setRange(50, 1000);
-    ui->imageWidth->setValue(300);
-    ui->imageHeight->setValue(250);
-    ui->qualitySlider->setValue(80);
-    ui->qualitySpinBox->setValue(80);
+    ui->imageWidth->setValue(840);
+    ui->imageHeight->setValue(480);
+    ui->qualitySlider->setValue(95);
+    ui->qualitySpinBox->setValue(95);
     this->current = NULL;
     imageDir = new QDir();
 
@@ -43,7 +43,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::importImages() {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory where images are stored"),
-                                                         "/home", QFileDialog::DontResolveSymlinks);
+                                                        "/home", QFileDialog::DontResolveSymlinks);
     imageDir->setPath(dirPath);
     QStringList filters;
     filters << "*.jpg" << "*.jpeg";
@@ -130,8 +130,7 @@ void MainWindow::generateReport(QString path)
     QDir writeDir(QDir::tempPath());
     writeDir.mkdir("compressed_images_temp");
     QString writePath = writeDir.absolutePath() + "/" + "compressed_images_temp/";
-    QString html("<html><table border='1'>");
-    bool newTabel = true;
+    QString html("<html><body>");
     QProgressDialog progressDialog("Generating Preview...", "Abort", 0, ((ui->gridLayout->rowCount()) * (ui->gridLayout->columnCount())), this);
     progressDialog.setAutoClose(true);
 
@@ -142,16 +141,12 @@ void MainWindow::generateReport(QString path)
         QImageWriter writer;
         writer.setFormat("jpg");
 
-        if(ui->gridLayout->itemAt(i) == 0) {
+        if(ui->gridLayout->itemAt(i) == NULL) {
             break;
         }
 
         Label *current = (Label*)ui->gridLayout->itemAt(i)->widget();
         progressDialog.setValue(i);
-
-        //currently two blocks for handling left and right images
-        //this code is ugly needs to be rewritten with a different
-        //report format
 
         if(current->include) {
             imageInput.load(current->imagePath);
@@ -160,52 +155,13 @@ void MainWindow::generateReport(QString path)
             writer.setFileName(writePath + fileName);
             writer.setQuality(ui->qualitySlider->value());
             writer.write(image);
-            //check if its the first image in the current row or the second
-            //adjust html accordingly. This mitigates blank table elements.
-            if(newTabel) {
-                html += QString("<tr><td><img src=%1/> %2</td>").arg(writePath + QString::number(i) + ".jpg", current->description);
-                newTabel = false;
-            }
-            else {
-                html += QString("<td><img src=%1/> %2</td></tr>").arg(writePath + QString::number(i) + ".jpg", current->description);
-                newTabel = true;
-            }
+            html += QString("<div style='margin: 10%;'><div style='margin: 0 auto;'><img src=%1/></div><p>%2</p></div>").arg(writePath + QString::number(i) + ".jpg", current->description);
         }
 
-        ++i;
-
-        if(ui->gridLayout->itemAt(i) == 0) {
-            break;
-        }
-
-        current = (Label*)ui->gridLayout->itemAt(i)->widget();
-
-        if(current->include) {
-            imageInput.load(current->imagePath);
-            image    = imageInput.scaled(ui->imageWidth->value(), ui->imageHeight->value(), Qt::KeepAspectRatio);
-            fileName = QString("%1.jpg").arg(QString::number(i));
-            writer.setFileName(writePath + fileName);
-            writer.setQuality(ui->qualitySlider->value());
-            writer.write(image);
-            //check if its the first image in the current row or the second
-            //adjust html accordingly. This mitigates blank table elements.
-            if(newTabel) {
-                html += QString("<tr><td><img src=%1/> %2</td>").arg(writePath + QString::number(i) + ".jpg", current->description);
-                newTabel = false;
-            }
-            else {
-                html += QString("<td><img src=%1/> %2</td></tr>").arg(writePath + QString::number(i) + ".jpg", current->description);
-                newTabel = true;
-            }
-        }
-
-        i++;
-//        //increment i to compensate for image position labels
-//        i += 2;
     }
     progressDialog.setValue(((ui->gridLayout->rowCount()) * (ui->gridLayout->columnCount())));
 
-    html += QString("</table></html>");
+    html += QString("</body></html>");
     QTextDocument doc;
     doc.setHtml(html);
     QPrinter printer(QPrinter::HighResolution);
